@@ -1,0 +1,95 @@
+{% extends 'backlog/base.html' %}
+{% block title %}Jere Utilizadór — Sistema EC{% endblock %}
+{% block breadcrumb %}Administrasaun / Utilizadór{% endblock %}
+{% block page_title %}Jere Utilizadór{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h4><i class="bi bi-people me-1"></i> Utilizadór Sistema</h4>
+  <p>{{ users|length }} utilizadór · Ita bele input naran, role no password rasik.</p></div>
+  <button class="btn btn-dark btn-pro" data-bs-toggle="modal" data-bs-target="#modalCreate"><i class="bi bi-person-plus me-1"></i> Tamba Utilizadór</button>
+</div>
+<div class="card-pro">
+  <div class="table-responsive">
+  <table class="table table-pro align-middle">
+    <thead><tr><th>Utilizadór</th><th>Role</th><th>Email</th><th>Estado</th><th class="text-end">Asaun</th></tr></thead>
+    <tbody>
+    {% for u in users %}
+    <tr>
+      <td>
+        <div class="d-flex gap-2 align-items-center">
+          <div class="avatar" style="background:#e7f1ff;color:#005EFF;width:32px;height:32px;font-size:13px">{{ u.first_name|first|default:u.username|first|upper }}</div>
+          <div><div class="fw-bold">{{ u.get_full_name|default:u.username }}</div><small class="text-muted">@{{ u.username }}</small></div>
+        </div>
+      </td>
+      <td><span class="badge bg-light text-dark border">{{ u.role }}</span></td>
+      <td><small class="text-muted">{{ u.email|default:"—" }}</small></td>
+      <td>{% if u.active %}<span class="badge-st badge-Aprovadu">Ativu</span>{% else %}<span class="badge-st badge-Rejeitadu">Dezativu</span>{% endif %}</td>
+      <td class="text-end text-nowrap">
+        <button class="btn btn-sm btn-outline-primary btn-pro" data-bs-toggle="modal" data-bs-target="#modalEdit{{ u.id }}"><i class="bi bi-pencil"></i> Edita</button>
+        <form method="post" class="d-inline">{% csrf_token %}
+          <input type="hidden" name="action" value="toggle">
+          <input type="hidden" name="user_id" value="{{ u.id }}">
+          <button class="btn btn-sm {% if u.active %}btn-outline-danger{% else %}btn-outline-success{% endif %} btn-pro">
+            {% if u.active %}Dezativa{% else %}Ativa{% endif %}
+          </button>
+        </form>
+        <form method="post" class="d-inline" onsubmit="return confirm('Hapus utilizadór @{{ u.username }}? Asaun ne\'e labele volta.')">{% csrf_token %}
+          <input type="hidden" name="action" value="delete">
+          <input type="hidden" name="user_id" value="{{ u.id }}">
+          <button class="btn btn-sm btn-outline-danger btn-pro" title="Hamos">
+            <i class="bi bi-trash"></i> Hamos
+          </button>
+        </form>
+      </td>
+    </tr>
+    {% empty %}<tr><td colspan="5" class="text-center text-muted py-5">Laiha utilizadór.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+
+<!-- MODAL CREATE -->
+<div class="modal fade" id="modalCreate" tabindex="-1">
+  <div class="modal-dialog"><div class="modal-content" style="border-radius:14px">
+    <form method="post">{% csrf_token %}<input type="hidden" name="action" value="create">
+    <div class="modal-header"><h6 class="modal-title fw-bold"><i class="bi bi-person-plus me-1"></i> Tamba Utilizadór Foun</h6>
+      <button class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body row g-2">
+      <div class="col-6"><label class="form-label">Naran Primeiru *</label><input name="first_name" class="form-control" placeholder="ex: Maria" required></div>
+      <div class="col-6"><label class="form-label">Apelidu *</label><input name="last_name" class="form-control" placeholder="ex: Santos" required></div>
+      <div class="col-6"><label class="form-label">Username *</label><input name="username" class="form-control" placeholder="ex: maria.santos" required></div>
+      <div class="col-6"><label class="form-label">Password *</label><input name="password" type="text" class="form-control" value="demo123" required></div>
+      <div class="col-6"><label class="form-label">Role *</label>
+        <select name="role" class="form-select">{% for val,label in roles %}<option value="{{ val }}">{{ label }}</option>{% endfor %}</select></div>
+      <div class="col-6"><label class="form-label">Email</label><input name="email" type="email" class="form-control" placeholder="maria@timortelecom.tl"></div>
+      <small class="text-muted">Naran ne'e mak sei mosu iha dropdown Reviewer no tabel EC.</small>
+    </div>
+    <div class="modal-footer"><button class="btn btn-outline-secondary btn-pro" data-bs-dismiss="modal" type="button">Kansela</button>
+      <button class="btn btn-dark btn-pro" type="submit"><i class="bi bi-check-lg me-1"></i> Salva</button></div>
+    </form>
+  </div></div>
+</div>
+
+<!-- MODAL EDIT per user -->
+{% for u in users %}
+<div class="modal fade" id="modalEdit{{ u.id }}" tabindex="-1">
+  <div class="modal-dialog"><div class="modal-content" style="border-radius:14px">
+    <form method="post">{% csrf_token %}<input type="hidden" name="action" value="update"><input type="hidden" name="user_id" value="{{ u.id }}">
+    <div class="modal-header"><h6 class="modal-title fw-bold">Edita — @{{ u.username }}</h6>
+      <button class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body row g-2">
+      <div class="col-6"><label class="form-label">Naran Primeiru</label><input name="first_name" class="form-control" value="{{ u.first_name }}"></div>
+      <div class="col-6"><label class="form-label">Apelidu</label><input name="last_name" class="form-control" value="{{ u.last_name }}"></div>
+      <div class="col-6"><label class="form-label">Role</label>
+        <select name="role" class="form-select">{% for val,label in roles %}<option value="{{ val }}" {% if u.role == val %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+      <div class="col-6"><label class="form-label">Email</label><input name="email" class="form-control" value="{{ u.email|default:'' }}"></div>
+      <div class="col-12"><label class="form-label">Password foun (opsionál)</label><input name="password" class="form-control" placeholder="Husik mamuk karik la muda"></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-outline-secondary btn-pro" data-bs-dismiss="modal" type="button">Kansela</button>
+      <button class="btn btn-dark btn-pro" type="submit">Salva Mudansa</button></div>
+    </form>
+  </div></div>
+</div>
+{% endfor %}
+{% endblock %}

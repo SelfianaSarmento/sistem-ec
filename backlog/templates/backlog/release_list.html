@@ -1,0 +1,30 @@
+{% extends 'backlog/base.html' %}
+{% block title %}Release — Sistema EC{% endblock %}
+{% block breadcrumb %}Release{% endblock %}
+{% block page_title %}Lista Release{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div><h4><i class="bi bi-box-seam me-1"></i> Release Management</h4>
+  <p>{{ releases|length }} release rejistadu </p></div>
+</div>
+<div class="card-pro">
+  <div class="table-responsive">
+  <table class="table table-pro align-middle">
+    <thead><tr><th>ID Release</th><th>Tinan</th><th>Numero Sequência</th><th>EC iha laran</th><th>Estadu</th><th>Data Produsaun</th></tr></thead>
+    <tbody>
+    {% for r in releases %}
+    <tr>
+      <td><a href="{% url 'release_detail' r.release_code %}" class="fw-bold text-decoration-none" style="color:#005EFF"><i class="bi bi-box me-1"></i>{{ r.release_code }}</a></td>
+      <td>{{ r.year }}</td>
+      <td><span class="badge bg-secondary">{{ r.number_sequency }}</span></td>
+      <td><span class="badge bg-dark">{{ r.ecs.count }}/{{ max_ecs }} EC</span></td>
+      <td>{% if not r.is_open %}<span class="badge-st badge-Fechadu">Fechada</span>{% elif r.is_full %}<span class="badge-st badge-Rejeitadu">Nakonu — Fechada</span>{% else %}<span class="badge-st badge-Em_Validasaun">Aberta</span>{% endif %}</td>
+      <td><small class="text-muted">{{ r.production_go_live_date|date:"d M Y"|default:"—" }}</small></td>
+    </tr>
+    {% empty %}<tr><td colspan="6" class="text-center text-muted py-5"><i class="bi bi-inbox fs-2 d-block mb-2"></i>Laiha Release</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+{% endblock %}

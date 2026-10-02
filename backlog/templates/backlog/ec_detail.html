@@ -1,0 +1,134 @@
+{% extends 'backlog/base.html' %}
+{% block title %}{{ ec.esc_code }} — Detalhu EC{% endblock %}
+{% block breadcrumb %}<a href="{% url 'backlog' %}" class="text-decoration-none text-muted">Backlog EC</a> / {{ ec.esc_code }}{% endblock %}
+{% block page_title %}{{ ec.esc_code }} <span class="badge-st badge-{{ ec.status }} ms-1" style="vertical-align:middle">{{ ec.get_status_display }}</span>{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <p class="mb-1"><span class="badge bg-light text-dark border">{{ ec.cr_rt_me_reference }}</span>
+      <span class="text-muted small ms-2"><i class="bi bi-calendar3"></i> {{ ec.creation_date|date:"d M Y" }} · Release {{ ec.id_release.release_code }}</span></p>
+  </div>
+  <div class="d-flex gap-2 flex-wrap">
+    <a href="{% url 'backlog' %}" class="btn btn-outline-secondary btn-pro"><i class="bi bi-arrow-left me-1"></i> Fila</a>
+    {% if role == 'Reviewer' and ec.status == 'Em_Validasaun' %}
+    <a href="{% url 'ec_approve' ec.esc_code %}" class="btn btn-success btn-pro" onclick="return confirm('Aprova {{ ec.esc_code }}?')"><i class="bi bi-check-lg me-1"></i> Aprova</a>
+    {% endif %}
+  </div>
+</div>
+
+{% if ec.status == 'Rejeitadu' and ec.rejection_comment %}
+<div class="alert alert-danger card-pro d-flex gap-2" style="border-left:4px solid #b3261e">
+  <i class="bi bi-exclamation-triangle-fill"></i>
+  <div><strong>Rejeitadu husi Reviewer:</strong><br>{{ ec.rejection_comment }}</div>
+</div>
+{% endif %}
+
+<div class="row g-3">
+  <div class="col-lg-8">
+    <div class="card-pro p-4 mb-3">
+      <h6 class="fw-bold mb-3"><i class="bi bi-file-text me-1"></i> Informasaun EC</h6>
+      <div class="row g-3">
+        <div class="col-md-6"><label class="form-label text-muted mb-1">ID EC</label><div class="fw-bold">{{ ec.esc_code }}</div></div>
+        <div class="col-md-6"><label class="form-label text-muted mb-1">Referensia CR/RT/COR</label><div class="fw-semibold">{{ ec.cr_rt_me_reference }}</div></div>
+        <div class="col-12"><label class="form-label text-muted mb-1">Deskrisaun </label><div class="p-3 bg-light rounded">{{ ec.description|linebreaksbr }}</div></div>
+        <div class="col-md-4"><label class="form-label text-muted mb-1">Solicitante</label><div><i class="bi bi-person-circle me-1"></i>{{ ec.id_solicitante.get_full_name|default:ec.id_solicitante.username }}</div></div>
+        <div class="col-md-4"><label class="form-label text-muted mb-1">Reviewer</label><div><i class="bi bi-person-check me-1"></i>{{ ec.cd_responsavel_id.get_full_name|default:ec.cd_responsavel_id.username|default:"—" }}</div>
+        {% if ec.status == 'Em_Validasaun' or ec.status == 'Rejeitadu' %}
+        {% if role == 'Solicitante' or role == 'Admin' %}
+        <button class="btn btn-sm btn-outline-dark btn-pro mt-2" data-bs-toggle="modal" data-bs-target="#modalReassign"><i class="bi bi-arrow-repeat me-1"></i> Troka Reviewer</button>
+        {% endif %}{% endif %}</div>
+        <div class="col-md-4"><label class="form-label text-muted mb-1">Release</label><div><span class="badge bg-dark">{{ ec.id_release.release_code }}</span></div></div>
+      </div>
+    </div>
+
+    <div class="card-pro p-4 mb-3">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="fw-bold mb-0"><i class="bi bi-files me-1"></i> Versaun Dokumentu ({{ versions|length }})</h6>
+        {% if role == 'DES' %}<small class="text-muted"></small>{% endif %}
+      </div>
+      {% for v in versions %}
+      <div class="d-flex align-items-center gap-3 p-3 border rounded mb-2">
+        <div class="kpi-icon" style="background:#e7f1ff;color:#005EFF;width:40px;height:40px"><i class="bi bi-file-earmark-pdf"></i></div>
+        <div class="flex-grow-1">
+          <div class="fw-bold">{{ v.version_number }} <small class="text-muted fw-normal">· {{ v.upload_date|date:"d M Y H:i" }}</small></div>
+          <small class="text-muted">{{ v.change_reason|default:"—" }} · upload husi {{ v.uploaded_by.username }}</small>
+        </div>
+        {% if v.file_path %}<a href="{{ v.file_path.url }}" class="btn btn-sm btn-outline-primary btn-pro" target="_blank"><i class="bi bi-download"></i> Download</a>{% endif %}
+      </div>
+      {% empty %}<p class="text-muted small mb-0"></p>{% endfor %}
+
+      {% if role == 'Solicitante' and ec.status == 'Rejeitadu' %}
+      <hr>
+      <h6 class="fw-bold"><i class="bi bi-upload me-1"></i> Upload Korreksaun</h6>
+      <form method="post" action="{% url 'ec_revise' ec.esc_code %}" enctype="multipart/form-data" class="d-flex gap-2 mt-2">
+        {% csrf_token %}
+        <input type="file" name="document" class="form-control" accept=".docx,.pdf" required>
+        <button class="btn btn-dark btn-pro text-nowrap">Upload v-foun</button>
+      </form>
+      {% endif %}
+    </div>
+
+    {% if role == 'Reviewer' and ec.status == 'Em_Validasaun' %}
+    <div class="card-pro p-4 mb-3" style="border-left:4px solid #b3261e">
+      <h6 class="fw-bold mb-2"><i class="bi bi-x-circle me-1"></i> Rejeita ho komentáriu</h6>
+      <form method="post" action="{% url 'ec_reject' ec.esc_code %}">
+        {% csrf_token %}
+        <textarea name="rejection_comment" class="form-control mb-2" rows="2" placeholder="Hakerek razaun rejeisaun (obrigatóriu)..." required></textarea>
+        <button class="btn btn-danger btn-pro">Rejeita EC</button>
+      </form>
+    </div>
+    {% endif %}
+
+    {% if role == 'DES' and ec.status == 'Aprovadu' %}
+    <div class="card-pro p-4 mb-3" style="border-left:4px solid #157347">
+      <h6 class="fw-bold mb-2"><i class="bi bi-rocket-takeoff me-1"></i> Tama Produsaun (Go-Live)</h6>
+      <form method="post" action="{% url 'ec_set_prd' ec.esc_code %}" class="d-flex gap-2">
+        {% csrf_token %}
+        <input type="date" name="production_go_live_date" class="form-control" required>
+        <button class="btn btn-success btn-pro text-nowrap">Fecha EC</button>
+      </form>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card-pro p-4">
+      <h6 class="fw-bold mb-3"><i class="bi bi-activity me-1"></i> Istóriku / Audit Log</h6>
+      <div class="timeline">
+        {% for h in history %}
+        <div class="mb-3">
+          <span class="timeline-dot"></span>
+          <div class="fw-semibold" style="font-size:13px">{{ h.action }}</div>
+          {% if h.detail %}<div class="text-muted" style="font-size:12px">{{ h.detail }}</div>{% endif %}
+          <small class="text-muted">{{ h.user.username }} · {{ h.data_hora|date:"d M Y H:i" }}</small>
+        </div>
+        {% empty %}<p class="text-muted small">Laiha istóriku.</p>{% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL TROKA REVIEWER -->
+{% if role == 'Solicitante' or role == 'Admin' %}
+<div class="modal fade" id="modalReassign" tabindex="-1">
+  <div class="modal-dialog"><div class="modal-content" style="border-radius:14px">
+    <form method="post" action="{% url 'ec_reassign' ec.esc_code %}">{% csrf_token %}
+    <div class="modal-header"><h6 class="modal-title fw-bold"><i class="bi bi-arrow-repeat me-1"></i> Troka Reviewer — {{ ec.esc_code }}</h6>
+      <button class="btn-close" data-bs-dismiss="modal" type="button"></button></div>
+    <div class="modal-body">
+      <p class="text-muted small">Reviewer atual: <strong>{{ ec.cd_responsavel_id.get_full_name|default:ec.cd_responsavel_id.username }}</strong></p>
+      <label class="form-label">Hili reviewer foun ({{ reviewers|length }} disponivel)</label>
+      <select name="reviewer" class="form-select" required>
+        {% for r in reviewers %}
+        <option value="{{ r.id }}" {% if ec.cd_responsavel_id.id == r.id %}selected{% endif %}>{{ r.get_full_name|default:r.username }} (@{{ r.username }})</option>
+        {% empty %}<option value="" disabled>Laiha reviewer ativu — kria via Jere Utilizadór</option>{% endfor %}
+      </select>
+      <small class="text-muted">Se EC Rejeitadu, troka reviewer sei loke fali ba Em Validasaun. Istóriku rejista automatikamente.</small>
+    </div>
+    <div class="modal-footer"><button class="btn btn-outline-secondary btn-pro" data-bs-dismiss="modal" type="button">Kansela</button>
+      <button class="btn btn-dark btn-pro" type="submit"><i class="bi bi-check-lg me-1"></i> Salva</button></div>
+    </form>
+  </div></div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Login — Sistema EC · Timor Telecom</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *{font-family:'Inter',system-ui,sans-serif}
+  body{min-height:100vh;background:#005EFF;display:flex}
+  .left{flex:1;background:linear-gradient(160deg,#005EFF 0%,#0036A6 100%);color:#fff;
+    padding:56px;display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden}
+  .left::after{content:"";position:absolute;width:480px;height:480px;border-radius:50%;
+    background:radial-gradient(circle,rgba(0,207,255,.28),transparent 70%);right:-120px;top:-120px}
+  .mark{width:52px;height:52px;border-radius:14px;background:#00CFFF;color:#141414;
+    display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px}
+  .feat{display:flex;gap:12px;align-items:flex-start;margin-top:18px;font-size:13.5px;color:#c3d0e8}
+  .feat i{color:#FABD0D;font-size:18px}
+  .right{width:480px;background:#f3f5f9;display:flex;align-items:center;justify-content:center;padding:40px;flex-shrink:0}
+  .card-login{background:#fff;border:1px solid #e6eaf1;border-radius:18px;box-shadow:0 20px 60px rgba(0,0,0,.12);padding:36px;width:100%;max-width:380px}
+  .form-control{border-radius:10px;padding:11px 14px;font-size:14px}
+  .btn-login{background:#005EFF;border:0;border-radius:10px;padding:11px;font-weight:700}
+  .btn-login:hover{background:#003FBF}
+  .card-login a{color:#005EFF}
+  @media(max-width:900px){.left{display:none}.right{width:100%}}
+</style>
+</head>
+<body>
+<div class="left">
+  <div class="d-flex gap-3 align-items-center mb-4">
+    <div class="mark">TT</div>
+    <div><div class="fw-bold fs-5">Sistema EC</div><small style="opacity:.7;letter-spacing:.05em">TIMOR TELECOM · LIGA MAIS</small></div>
+  </div>
+  <h1 class="fw-bold" style="font-size:38px;line-height:1.15">Especificação de  <br>Configuração</h1>
+  <p class="mt-3" style="color:#9fb0cc;max-width:420px">Plataforma sentrál ba proposta, validasaun, aprovasaun no Go-Live — ho audit trail kompletu.</p>
+  <div class="mt-2">
+    <div class="feat"><i class="bi bi-kanban-fill"></i><div><strong class="text-white">Backlog transparente</strong><br>Akompaña EC husi Em Validasaun to'o Fechadu.</div></div>
+    <div class="feat"><i class="bi bi-shield-check"></i><div><strong class="text-white">Kontrola husi role</strong><br>Solicitante · Reviewer · DES · Admin.</div></div>
+    <div class="feat"><i class="bi bi-journal-text"></i><div><strong class="text-white">Audit log automátiku</strong><br>Rejista sé, saida, no bainhira.</div></div>
+  </div>
+  <small class="mt-5" style="opacity:.5">© 2026 Timor Telecom</small>
+</div>
+<div class="right">
+  <div class="card-login">
+    <h5 class="fw-bold mb-1">Bem-vindo👋</h5>
+    <p class="text-muted small mb-4">Login atu kontinua ba Sistema EC</p>
+    <form method="post">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label class="form-label fw-semibold small">Username</label>
+        <div class="input-group">
+          <span class="input-group-text bg-white"><i class="bi bi-person"></i></span>
+          <input type="text" name="username" class="form-control" placeholder="username" required autofocus>
+        </div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label fw-semibold small">Password</label>
+        <div class="input-group">
+          <span class="input-group-text bg-white"><i class="bi bi-lock"></i></span>
+          <input type="password" name="password" class="form-control" placeholder="password" required>
+        </div>
+      </div>
+      {% if form.errors %}
+      <div class="alert alert-danger small d-flex gap-2"><i class="bi bi-exclamation-triangle-fill"></i> Username ka password sala.</div>
+      {% endif %}
+      <button type="submit" class="btn btn-primary w-100 btn-login">Login <i class="bi bi-arrow-right ms-1"></i></button>
+      <p class="text-center text-muted mt-3 mb-0" style="font-size:12px"><i class="bi bi-shield-lock"></i> Asesu restritu · Kontaktu Admin karik haluha password</p>
+    </form>
+  </div>
+</div>
+</body>
+</html>
